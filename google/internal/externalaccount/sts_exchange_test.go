@@ -7,21 +7,22 @@ package externalaccount
 import (
 	"context"
 	"encoding/json"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"golang.org/x/oauth2"
 )
 
-var auth = ClientAuthentication{
+var auth = clientAuthentication{
 	AuthStyle:    oauth2.AuthStyleInHeader,
 	ClientID:     clientID,
 	ClientSecret: clientSecret,
 }
 
-var tokenRequest = STSTokenExchangeRequest{
+var tokenRequest = stsTokenExchangeRequest{
 	ActingParty: struct {
 		ActorToken     string
 		ActorTokenType string
@@ -37,7 +38,7 @@ var tokenRequest = STSTokenExchangeRequest{
 
 var requestbody = "audience=32555940559.apps.googleusercontent.com&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Atoken-exchange&requested_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Aaccess_token&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdevstorage.full_control&subject_token=Sample.Subject.Token&subject_token_type=urn%3Aietf%3Aparams%3Aoauth%3Atoken-type%3Ajwt"
 var responseBody = `{"access_token":"Sample.Access.Token","issued_token_type":"urn:ietf:params:oauth:token-type:access_token","token_type":"Bearer","expires_in":3600,"scope":"https://www.googleapis.com/auth/cloud-platform"}`
-var expectedToken = STSTokenExchangeResponse{
+var expectedToken = stsTokenExchangeResponse{
 	AccessToken:     "Sample.Access.Token",
 	IssuedTokenType: "urn:ietf:params:oauth:token-type:access_token",
 	TokenType:       "Bearer",
@@ -75,9 +76,9 @@ func TestExchangeToken(t *testing.T) {
 	headers := http.Header{}
 	headers.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := ExchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, nil)
+	resp, err := exchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, nil)
 	if err != nil {
-		t.Fatalf("ExchangeToken failed with error: %v", err)
+		t.Fatalf("exchangeToken failed with error: %v", err)
 	}
 
 	if expectedToken != *resp {
@@ -95,7 +96,7 @@ func TestExchangeToken_Err(t *testing.T) {
 
 	headers := http.Header{}
 	headers.Add("Content-Type", "application/x-www-form-urlencoded")
-	_, err := ExchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, nil)
+	_, err := exchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, nil)
 	if err == nil {
 		t.Errorf("Expected handled error; instead got nil.")
 	}
@@ -127,6 +128,9 @@ func TestExchangeToken_Opts(t *testing.T) {
 		}
 		var opts map[string]interface{}
 		err = json.Unmarshal([]byte(strOpts[0]), &opts)
+		if err != nil {
+			t.Fatalf("Couldn't parse received \"options\" field.")
+		}
 		if len(opts) < 2 {
 			t.Errorf("Too few options received.")
 		}
@@ -179,5 +183,5 @@ func TestExchangeToken_Opts(t *testing.T) {
 	inputOpts := make(map[string]interface{})
 	inputOpts["one"] = firstOption
 	inputOpts["two"] = secondOption
-	ExchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, inputOpts)
+	exchangeToken(context.Background(), ts.URL, &tokenRequest, auth, headers, inputOpts)
 }

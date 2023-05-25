@@ -19,11 +19,17 @@ func TestRetrieveURLSubjectToken_Text(t *testing.T) {
 		if r.Method != "GET" {
 			t.Errorf("Unexpected request method, %v is found", r.Method)
 		}
+		if r.Header.Get("Metadata") != "True" {
+			t.Errorf("Metadata header not properly included.")
+		}
 		w.Write([]byte("testTokenValue"))
 	}))
+	heads := make(map[string]string)
+	heads["Metadata"] = "True"
 	cs := CredentialSource{
-		URL:    ts.URL,
-		Format: format{Type: fileTypeText},
+		URL:     ts.URL,
+		Format:  format{Type: fileTypeText},
+		Headers: heads,
 	}
 	tfc := testFileConfig
 	tfc.CredentialSource = cs
