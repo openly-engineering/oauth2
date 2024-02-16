@@ -20,7 +20,7 @@ import (
 	"golang.org/x/oauth2/jws"
 )
 
-//go:embed dummyPrivateKey.txt
+//go:embed testdata/dummyPrivateKey.txt
 var dummyPrivateKey []byte
 
 func TestJWTFetch_JSONResponse(t *testing.T) {
